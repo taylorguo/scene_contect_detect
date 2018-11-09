@@ -42,7 +42,7 @@ class TethysSceneDetector():
         scene_manager = SceneManager(stats_manager)
 
         # select ContentDetector to detect scenes
-        # Threshhold = 30 by default, set it lower if density is darker, say 27
+        # Threshhold = 30 by default, set it lower if intensity is darker, say 27
         # it can be analyzed from output scene timecode or generated images against video
         scene_manager.add_detector(ContentDetector())
         base_timecode = video_manager.get_base_timecode()
@@ -197,7 +197,7 @@ class TethysSceneDetector():
 
 
     def create_images_folder(self, folder_name):
-        # Create folder to generate images
+        # Create a folder to generate images
         # input a string of folder_name ; return folder path
         isExists = os.path.exists(folder_name)
         if not isExists:
