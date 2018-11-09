@@ -241,10 +241,10 @@ if __name__ == "__main__":
     # VIDEO_PATH = "/Users/taylorguo/Documents/Innotech/qtt_mp4/goldeneye.mp4"
 
     # VIDEO_PATH = "2girls.mp4"
-    VIDEO_PATH = "./video/my_video.mp4"
+    # VIDEO_PATH = "./video/my_video.mp4"
 
-    # VIDEO_URL = "http://v-qtt.quduopai.cn/qdp-sjsp-mp4-hd/7dd8c2cca8484f219d6e1566c90740a2/hd.mp4"
-    # VIDEO_PATH = download_video(VIDEO_URL)
+    VIDEO_URL = "http://v-qtt.quduopai.cn/qdp-sjsp-mp4-hd/7dd8c2cca8484f219d6e1566c90740a2/hd.mp4"
+    VIDEO_PATH = download_video(VIDEO_URL)
 
     tsd = TethysSceneDetector()
     # s_list = tsd.find_scenes(VIDEO_PATH)

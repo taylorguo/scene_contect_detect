@@ -1,5 +1,5 @@
 # basic dependencies
-Python3.6
+# Python3.6
 numpy==1.15.2
 opencv-python==3.4.3.18
 imutils==0.5.1
