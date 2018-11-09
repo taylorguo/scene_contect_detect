@@ -27,7 +27,6 @@ class TethysSceneDetector():
     def __init__(self):
 
         self.video_path = ""
-        self.fps = 0
 
 
     def find_scenes(self, video_path):
@@ -36,7 +35,7 @@ class TethysSceneDetector():
         # return: scene_list in FrameTimecode format, see below detail sample / explaination.
         self.video_path = video_path
         video_manager = VideoManager([self.video_path])
-        self.fps = video_manager.get_framerate()
+        fps = video_manager.get_framerate()
         nFrames = count_frames(self.video_path)
 
         stats_manager = StatsManager()
@@ -67,7 +66,7 @@ class TethysSceneDetector():
             video_manager.release()
 
         if scene_list == []:
-            scene_list = [(FrameTimecode(0, self.fps), FrameTimecode(nFrames, self.fps))]
+            scene_list = [(FrameTimecode(0, fps), FrameTimecode(nFrames, fps))]
 
         # return a list of tuple to indicate each scene start & end frame number in FrameTimecode
         # looks like:       [(FrameTimecode(frame=0, fps=4.358900), FrameTimecode(frame=68, fps=4.358900))]
@@ -125,8 +124,7 @@ class TethysSceneDetector():
         num_images = 3
         image_extension = "jpg"
 
-        # Reset video manager and downscale factor.
-
+        # Re-instance video manager and set downscale factor.
         video_manager = VideoManager([video_path])
         video_manager.set_downscale_factor(1)
         video_manager.start()
@@ -165,9 +163,11 @@ class TethysSceneDetector():
             # End FrameTimecode is always the same frame as the next scene's start_time
             # (one frame past the end), so we need to subtract 1 here.
             timecode_list[i].append(end_time - 1)
-        #########################################
 
-        img_folder = self.create_folder(folder_name)
+        # set a images_folder name in string, create the folder
+        # next, video_manager to seek & grab frames
+        # then, write images using CV
+        img_folder = self.create_images_folder(folder_name)
         output_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), img_folder)
 
         for i in timecode_list:
@@ -188,28 +188,27 @@ class TethysSceneDetector():
                     completed = False
                     break
 
-        if completed is True: video_manager.release()
-
+        # release video_manager resources
         # in case of video_manager failure
-        if not completed:
-            print("Could not generate all output images.")
+        if completed : video_manager.release()
+        else: print("Could not generate all output images.")
 
         return output_dir
 
 
-    ### Create folder to generate images
-    def create_folder(self, folder_name):
-        img_folder = folder_name
-        isExists = os.path.exists(img_folder)
+    def create_images_folder(self, folder_name):
+        # Create folder to generate images
+        # input a string of folder_name ; return folder path
+        isExists = os.path.exists(folder_name)
         if not isExists:
-            os.makedirs(img_folder)
-            print(" **** Scene images folder \"" + img_folder + "\" created, generating pictures ...")
-            return img_folder
+            os.makedirs(folder_name)
+            print(" **** Scene images folder \"" + folder_name + "\" created, generating pictures ...")
+            return os.path.join(os.path.dirname(folder_name),folder_name)
         else:
             # if folder exist，print message
-            print(" **** \"" + img_folder + "\" image folder exist")
-            return img_folder
-        return img_folder
+            print(" **** \"" + folder_name + "\" image folder exist")
+            return os.path.join(os.path.dirname(folder_name), folder_name)
+        return os.path.join(os.path.dirname(folder_name), folder_name)
 
 
 #######  used to download mp4 video ######
@@ -241,8 +240,11 @@ if __name__ == "__main__":
     # VIDEO_PATH = "/Users/taylorguo/Documents/Innotech/qtt_mp4/2girls.mp4"
     # VIDEO_PATH = "/Users/taylorguo/Documents/Innotech/qtt_mp4/goldeneye.mp4"
 
-    VIDEO_URL = "http://v-qtt.quduopai.cn/qdp-sjsp-mp4-hd/7dd8c2cca8484f219d6e1566c90740a2/hd.mp4"
-    VIDEO_PATH = download_video(VIDEO_URL)
+    # VIDEO_PATH = "2girls.mp4"
+    VIDEO_PATH = "./video/my_video.mp4"
+
+    # VIDEO_URL = "http://v-qtt.quduopai.cn/qdp-sjsp-mp4-hd/7dd8c2cca8484f219d6e1566c90740a2/hd.mp4"
+    # VIDEO_PATH = download_video(VIDEO_URL)
 
     tsd = TethysSceneDetector()
     # s_list = tsd.find_scenes(VIDEO_PATH)
@@ -253,5 +255,5 @@ if __name__ == "__main__":
     # print(tc_list,"\n")
     # ss_list = tsd.convert_to_seconds(s_list)
     # print(ss_list)
-    print(" ---- Created images folder: ", tsd.generate_images(VIDEO_PATH, "test"))
+    print(" ---- Created images folder & images : ", tsd.generate_images(VIDEO_PATH, "test-images_folder"))
 
