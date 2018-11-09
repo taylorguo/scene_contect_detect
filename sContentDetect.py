@@ -24,16 +24,15 @@ from scenedetect.detectors import ContentDetector
 
 class TethysSceneDetector():
 
-    def __init__(self):
+    def __init__(self, video_path):
 
-        self.video_path = ""
+        self.video_path = video_path
 
 
-    def find_scenes(self, video_path):
+    def find_scenes(self):
         # instance scenedetect objects to detect scenes using ContentDetector
         # input:  string- video path;
         # return: scene_list in FrameTimecode format, see below detail sample / explaination.
-        self.video_path = video_path
         video_manager = VideoManager([self.video_path])
         fps = video_manager.get_framerate()
         nFrames = count_frames(self.video_path)
@@ -42,7 +41,7 @@ class TethysSceneDetector():
         scene_manager = SceneManager(stats_manager)
 
         # select ContentDetector to detect scenes
-        # Threshhold = 30 by default, set it lower if intensity is darker, say 27
+        # Threshhold = 30 by default, set it lower if density is darker, say 27
         # it can be analyzed from output scene timecode or generated images against video
         scene_manager.add_detector(ContentDetector())
         base_timecode = video_manager.get_base_timecode()
@@ -52,16 +51,11 @@ class TethysSceneDetector():
         try:
             # set downscale factor according to resolution ratio to improve speed
             video_manager.set_downscale_factor()
-
             video_manager.start()
-
             # scene detection on video_manager(video_path)
             scene_manager.detect_scenes(frame_source=video_manager)
-
             # scene_list = scene_manager.get_cut_list(base_timecode)
             scene_list = scene_manager.get_scene_list(base_timecode)
-
-
         finally:
             video_manager.release()
 
@@ -115,24 +109,22 @@ class TethysSceneDetector():
         return seconds_scene_list
 
 
-    def generate_images(self, video_path, folder_name):
+    def generate_images(self, folder_name):
         # open video / VideoManager to get scene_list, generate 3 images per scene
-        # input:  string- video path;
+        # input:  string- folder_name;
         # return: scene_list in FrameTimecode format, see below detail sample / explaination.
-        scene_list = self.find_scenes(video_path)
-
-        num_images = 3
-        image_extension = "jpg"
+        scene_list = self.find_scenes()
+        print("Detect Scenes:", len(scene_list))
 
         # Re-instance video manager and set downscale factor.
-        video_manager = VideoManager([video_path])
+        video_manager = VideoManager([self.video_path])
         video_manager.set_downscale_factor(1)
         video_manager.start()
 
-        print("Detect Scenes:", len(scene_list))
-        print(" **** Generating output images (%d per scene)..."%num_images)
-
+        num_images = 3
+        image_extension = "jpg"
         completed = True
+        print(" **** Generating output images (%d per scene)..."%num_images)
 
         # Generate image filename
         image_name_template = "$VIDEO_NAME-Scene-$SCENE_NUMBER-$IMAGE_NUMBER"
@@ -197,7 +189,7 @@ class TethysSceneDetector():
 
 
     def create_images_folder(self, folder_name):
-        # Create a folder to generate images
+        # Create folder to generate images
         # input a string of folder_name ; return folder path
         isExists = os.path.exists(folder_name)
         if not isExists:
@@ -228,7 +220,6 @@ def download_video(url_address):
         code.write(video_data)
 
     current_path = os.path.dirname(os.path.realpath(__file__))
-
     full_file_path = os.path.join(current_path, saved_file_name)
 
     return saved_file_name
@@ -246,8 +237,8 @@ if __name__ == "__main__":
     VIDEO_URL = "http://v-qtt.quduopai.cn/qdp-sjsp-mp4-hd/7dd8c2cca8484f219d6e1566c90740a2/hd.mp4"
     VIDEO_PATH = download_video(VIDEO_URL)
 
-    tsd = TethysSceneDetector()
-    # s_list = tsd.find_scenes(VIDEO_PATH)
+    tsd = TethysSceneDetector(VIDEO_PATH)
+    # s_list = tsd.find_scenes()
     # # print(s_list)
     # f_list = tsd.convert_to_frames(s_list)
     # print(f_list,"\n")
@@ -255,5 +246,5 @@ if __name__ == "__main__":
     # print(tc_list,"\n")
     # ss_list = tsd.convert_to_seconds(s_list)
     # print(ss_list)
-    print(" ---- Created images folder & images : ", tsd.generate_images(VIDEO_PATH, "test-images_folder"))
+    print(" ---- Created images folder & images : ", tsd.generate_images("test-images_folder"))
 
