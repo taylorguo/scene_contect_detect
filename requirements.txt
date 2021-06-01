@@ -7,5 +7,5 @@ scenedetect==0.5
 
 # optional dependencies, used for download video file
 requests==2.19.1
-urllib3==1.23
+urllib3==1.26.5
 
